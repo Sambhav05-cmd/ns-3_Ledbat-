@@ -220,9 +220,9 @@ class TcpSocketState : public Object
     Time m_slowdownStartTime;                                  //!< Time when slowdown starts
     Time m_slowdownDuration;                                   //!< Duration of slowdown
     Time m_nextSlowdownTime = Time::Max();                     //!< Minimum time when next slowdown occurs
-    bool m_waitingForInitialSlowdown = false;                  //!< waiting for initial slowdown
-    bool m_inSlowdown = false;                                 //!< currently in slowdown
-    bool m_slowdownRecovery = false;                           //!< recovering from slowdown, cwnd increases to ssthresh
+    bool m_waitingForInitialSlowdown{false};                  //!< waiting for initial slowdown
+    bool m_inSlowdown{false};                                //!< currently in slowdown
+    bool m_slowdownRecovery{false};                           //!< recovering from slowdown, cwnd increases to ssthresh
 
 
     /**

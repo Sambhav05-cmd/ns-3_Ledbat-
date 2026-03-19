@@ -214,7 +214,7 @@ TcpLedbatPlusPlus::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcke
         {
             m_flag |= LEDBAT_CAN_SS;
         }
-    }else if(!(tcb->m_waitingForInitialSlowdown || tcb->m_inSlowdown || tcb->m_slowdownRecovery) && (Simulator::Now() >= tcb->m_nextSlowdownTime)){     //checking if time for next periodic slowdown
+    }else if(!(tcb->m_initialSs || tcb->m_waitingForInitialSlowdown || tcb->m_inSlowdown || tcb->m_slowdownRecovery) && (Simulator::Now() >= tcb->m_nextSlowdownTime)){     //checking if time for next periodic slowdown
         tcb->m_inSlowdown = true;
         m_flag |= LEDBAT_CAN_SS;
         tcb->m_slowdownStartTime = Simulator::Now();
@@ -298,6 +298,20 @@ TcpLedbatPlusPlus::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcke
     }
 }
 
+uint32_t TcpLedbatPlusPlus::SlowStart(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
+{
+    NS_LOG_FUNCTION(this << tcb << segmentsAcked);
+    if(segmentsAcked >= 1)
+    {
+        double gain = ComputeGain();
+        tcb->m_cWnd += static_cast<uint32_t>(gain * tcb->m_segmentSize);
+        NS_LOG_INFO("In SlowStart, updated to cwnd " << tcb->m_cWnd << " ssthresh "
+                                                     << tcb->m_ssThresh << " gain " << gain);
+        return segmentsAcked - 1;
+    }
+    return 0;
+}
+
 void
 TcpLedbatPlusPlus::CongestionAvoidance(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked)
 {
@@ -323,12 +337,11 @@ TcpLedbatPlusPlus::CongestionAvoidance(Ptr<TcpSocketState> tcb, uint32_t segment
 
     double delayRatio = static_cast<double>(queueDelay) / m_target.GetMilliSeconds();
 
-  
+    double gain = ComputeGain();
     if(delayRatio < 1.0){
-        double gain = ComputeGain();
         W += gain * ackFactor;
     } else {
-        double md = m_gain - W * (delayRatio - 1.0);
+        double md = gain - W * (delayRatio - 1.0);
         W += std::max(md * ackFactor, -W * ackFactor / 2.0);
     }
 

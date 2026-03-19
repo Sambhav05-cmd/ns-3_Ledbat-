@@ -104,6 +104,13 @@ class TcpLedbatPlusPlus : public TcpNewReno
      */
     void CongestionAvoidance(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
 
+    /**
+     * @brief Exponential slow start using gain factor
+     * @param tcb internal congestion state
+     * @param segmentsAcked count of segments ACKed
+     */
+    uint32_t SlowStart(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
+
   private:
     /**
      * @brief Buffer structure to store delays
