@@ -2,7 +2,7 @@ import subprocess
 import sys
 import re
 
-NS3_CMD = ["./ns3", "run", "scratch/LedbatPlusPlusSlowdown"]
+NS3_CMD = ["./ns3", "run", "scratch/PeriodicSlowdown"]
 
 # regular expressions to check each stage of the slowdown
 EXIT_INIT_SS_RE = re.compile(r"Exiting initial slow start due to exceeding 3/4 of target delay")

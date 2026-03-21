@@ -255,7 +255,7 @@ TcpLedbatPlusPlus::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcke
             tcb->m_slowdownRecovery = true;                                     // grow cwnd according to SlowStart
             m_flag |= LEDBAT_CAN_SS;
             NS_LOG_INFO("2 RTT over, growing cwnd to ssthresh through slow start...");
-            SlowStart(tcb, segmentsAcked);
+            segmentsAcked = SlowStart(tcb, segmentsAcked);
         }else{                                                                  // continue to hold cwnd at 2 packets until 2 RTT passes
             NS_LOG_INFO("Holding cwnd at 2 packets for 2 RTT...");
         }
@@ -276,7 +276,7 @@ TcpLedbatPlusPlus::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcke
         }else{                                                                  // waiting for cwnd to regrow to ssthresh
             NS_LOG_INFO("Growing cwnd to ssthresh through slow start...");
             m_flag |= LEDBAT_CAN_SS;
-            SlowStart(tcb, segmentsAcked);
+            segmentsAcked = SlowStart(tcb, segmentsAcked);
         }
     }
     else if (m_doSs == DO_SLOWSTART && tcb->m_cWnd <= tcb->m_ssThresh && (m_flag & LEDBAT_CAN_SS))
@@ -284,7 +284,7 @@ TcpLedbatPlusPlus::IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcke
         if((m_flag & LEDBAT_VALID_OWD)){
             NS_LOG_INFO("Queue delay: "<< queueDelay<<" Target delay: "<< m_target.GetMilliSeconds());
         }
-        SlowStart(tcb, segmentsAcked);
+        segmentsAcked = SlowStart(tcb, segmentsAcked);
     }
     else
     {
@@ -303,6 +303,12 @@ uint32_t TcpLedbatPlusPlus::SlowStart(Ptr<TcpSocketState> tcb, uint32_t segments
     NS_LOG_FUNCTION(this << tcb << segmentsAcked);
     if(segmentsAcked >= 1)
     {
+        if ((m_flag & LEDBAT_VALID_OWD) == 0)
+        {
+            return TcpNewReno::SlowStart(
+                tcb,
+                segmentsAcked); // letting it fall to TCP behaviour if no timestamps
+        }
         double gain = ComputeGain();
         tcb->m_cWnd += static_cast<uint32_t>(gain * tcb->m_segmentSize);
         NS_LOG_INFO("In SlowStart, updated to cwnd " << tcb->m_cWnd << " ssthresh "
