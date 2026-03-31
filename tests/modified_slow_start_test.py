@@ -2,7 +2,7 @@ import subprocess
 import sys
 import re
 
-NS3_CMD = ["./ns3", "run", "scratch/MultiplicativeDecreaseScratch"]
+NS3_CMD = ["./ns3", "run", "scratch/ModifiedSlowStart"]
 
 SS_RE = re.compile(r"\s*Queue delay\s*:\s*(\d+)\s*Target delay\s*:\s*(\d+)")
 EXIT_RE = re.compile(r"Exiting initial slow start due to exceeding 3/4 of target delay...")
